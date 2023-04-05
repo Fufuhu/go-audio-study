@@ -9,3 +9,8 @@
 ```bash
 sudo apt install portaudio19-dev
 ```
+
+macOS Monterey 12.6.3の場合は
+```bash
+brew install portdudio
+```
