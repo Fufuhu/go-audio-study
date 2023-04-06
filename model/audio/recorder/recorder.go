@@ -107,7 +107,9 @@ func GetAudioRecorderDefaultConfig() *AudioRecorderConfig {
 	return &AudioRecorderConfig{
 		InputChannel:  1,
 		OutputChannel: 0,
-		SampleRate:    44100,
+		// SampleRate:    48000,
+		SampleRate: 16000,
+		// SampleRate:    44100,
 	}
 }
 
