@@ -37,5 +37,5 @@ func init() {
 	// is called directly, e.g.:
 	// transcribeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	transcribeCmd.Flags().StringVarP(&filePath, "filePath", "f", "", "file path to transcribe")
-	transcribeCmd.MarkFlagRequired("filePath")
+	_ = transcribeCmd.MarkFlagRequired("filePath")
 }
