@@ -36,6 +36,7 @@ func (t *AudioTranscriber) StartTranscribeFile(filePath string) (*TranscribeJob,
 		logger.Warn(err.Error())
 		return nil, err
 	}
+	logger.Info(fmt.Sprintf("filepath is %s", absoluteFilePath))
 
 	media := &types.Media{
 		MediaFileUri: aws.String(absoluteFilePath),
