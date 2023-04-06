@@ -113,5 +113,5 @@ func init() {
 	// is called directly, e.g.:
 	// recordCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	recordCmd.Flags().StringVarP(&filePath, "filePath", "f", "", "file path to create output")
-	recordCmd.MarkFlagRequired("filePath")
+	_ = recordCmd.MarkFlagRequired("filePath")
 }
