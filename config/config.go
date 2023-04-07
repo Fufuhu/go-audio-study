@@ -7,7 +7,7 @@ import (
 )
 
 type ApplicationConfig struct {
-	Bucket string `envconfig:"BUCKET"`
+	OpenAPIKey string `envconfig:"OPEN_API_KEY"`
 }
 
 var config *ApplicationConfig
