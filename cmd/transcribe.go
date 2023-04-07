@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/Fufuhu/go-audio-study/model/audio/transcriber"
 	"github.com/Fufuhu/go-audio-study/util/logging"
@@ -30,15 +31,17 @@ to quickly create a Cobra application.`,
 
 		t, err := transcriber.GetAudioTranscriber(transcriber.GetDefaultAudioTranscriberConfig())
 		if err != nil {
-			os.Exit(1)
-		}
-		job, err := t.StartTranscribeFile(filePath)
-		if err != nil {
-			logger.Warn(err.Error())
+			logger.Error(err.Error())
 			os.Exit(1)
 		}
 
-		logger.Info(fmt.Sprintf("job is %s", job.JobName))
+		ctx := context.Background()
+		transcription, err := t.Transcribe(ctx, filePath)
+		if err != nil {
+			logger.Error(err.Error())
+			os.Exit(1)
+		}
+		fmt.Println(transcription)
 	},
 }
 
