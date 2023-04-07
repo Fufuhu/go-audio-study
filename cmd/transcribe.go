@@ -5,8 +5,11 @@ package cmd
 
 import (
 	"fmt"
-
+	"github.com/Fufuhu/go-audio-study/model/audio/transcriber"
+	"github.com/Fufuhu/go-audio-study/util/logging"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+	"os"
 )
 
 // transcribeCmd represents the transcribe command
@@ -20,7 +23,22 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("transcribe called")
+		logger := logging.GetLogger()
+		defer func(logger *zap.Logger) {
+			_ = logger.Sync()
+		}(logger)
+
+		t, err := transcriber.GetAudioTranscriber(transcriber.GetDefaultAudioTranscriberConfig())
+		if err != nil {
+			os.Exit(1)
+		}
+		job, err := t.StartTranscribeFile(filePath)
+		if err != nil {
+			logger.Warn(err.Error())
+			os.Exit(1)
+		}
+
+		logger.Info(fmt.Sprintf("job is %s", job.JobName))
 	},
 }
 
