@@ -41,5 +41,5 @@ func init() {
 	// is called directly, e.g.:
 	// speakCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	speakCmd.Flags().StringVarP(&sentence, "sentence", "s", "", "sentence to speak")
-	speakCmd.MarkFlagRequired("sentence")
+	_ = speakCmd.MarkFlagRequired("sentence")
 }
