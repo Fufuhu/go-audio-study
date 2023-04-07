@@ -2,77 +2,47 @@ package transcriber
 
 import (
 	"context"
-	"fmt"
+	"github.com/Fufuhu/go-audio-study/config"
 	"github.com/Fufuhu/go-audio-study/util/logging"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/transcribe"
-	"github.com/aws/aws-sdk-go-v2/service/transcribe/types"
-	"github.com/google/uuid"
+	"github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
 	"path/filepath"
 )
 
-type AudioTranscriberConfig struct{}
+type AudioTranscriberConfig struct {
+	OpenAPIKey string
+}
 
 type AudioTranscriber struct {
 	config *AudioTranscriberConfig
-	client *transcribe.Client
 }
 
-type TranscribeJob struct {
-	JobName string
-}
-
-// StartTranscribeFile ローカルファイルのTranscribe処理をじっこうします
-func (t *AudioTranscriber) StartTranscribeFile(filePath string) (*TranscribeJob, error) {
+// Transcribe ローカルファイルのTranscribe処理を実行します
+func (t *AudioTranscriber) Transcribe(ctx context.Context, filePath string) (string, error) {
 	logger := logging.GetLogger()
 	defer func(logger *zap.Logger) {
 		_ = logger.Sync()
 	}(logger)
 
-	absoluteFilePath, err := filepath.Abs(filePath)
+	absolutePath, err := filepath.Abs(filePath)
 	if err != nil {
 		logger.Warn(err.Error())
-		return nil, err
-	}
-	logger.Info(fmt.Sprintf("filepath is %s", absoluteFilePath))
-
-	media := &types.Media{
-		MediaFileUri: aws.String(absoluteFilePath),
+		return "", err
 	}
 
-	uid, _ := uuid.NewRandom()
-	jobName := uid.String()
-
-	settings := &types.Settings{
-		MaxSpeakerLabels:  aws.Int32(1),
-		ShowSpeakerLabels: aws.Bool(true),
+	client := openai.NewClient(t.config.OpenAPIKey)
+	req := openai.AudioRequest{
+		Model:    openai.Whisper1,
+		FilePath: absolutePath,
 	}
 
-	resp, err := t.client.StartTranscriptionJob(context.TODO(),
-		&transcribe.StartTranscriptionJobInput{
-			LanguageCode:         types.LanguageCodeJaJp,
-			TranscriptionJobName: aws.String(jobName),
-			Settings:             settings,
-			Media:                media,
-		})
-
+	resp, err := client.CreateTranscription(ctx, req)
 	if err != nil {
 		logger.Warn(err.Error())
-		return nil, err
+		return "", err
 	}
 
-	logger.Info(fmt.Sprintf("Successfully submit job(%s)", jobName))
-
-	job := &TranscribeJob{JobName: aws.ToString(resp.TranscriptionJob.TranscriptionJobName)}
-
-	return job, nil
-}
-
-// WaitToTranscribe StartTranscribeFileの後に処理が終わるのを待つための関数
-func (t *AudioTranscriber) WaitToTranscribe(job *TranscribeJob) error {
-	return nil
+	return resp.Text, nil
 }
 
 func GetAudioTranscriber(c *AudioTranscriberConfig) (*AudioTranscriber, error) {
@@ -81,17 +51,12 @@ func GetAudioTranscriber(c *AudioTranscriberConfig) (*AudioTranscriber, error) {
 		_ = logger.Sync()
 	}(logger)
 
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		logger.Warn(err.Error())
-		return nil, err
-	}
-
-	return &AudioTranscriber{
-		config: c,
-		client: transcribe.NewFromConfig(cfg)}, nil
+	return &AudioTranscriber{config: c}, nil
 }
 
 func GetDefaultAudioTranscriberConfig() *AudioTranscriberConfig {
-	return &AudioTranscriberConfig{}
+	apiKey := config.GetConfig().OpenAPIKey
+	return &AudioTranscriberConfig{
+		OpenAPIKey: apiKey,
+	}
 }
