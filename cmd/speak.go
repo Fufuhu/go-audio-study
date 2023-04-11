@@ -23,7 +23,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		speech := htgotts.Speech{Folder: "audio", Language: voices.Japanese, Handler: &handlers.Native{}}
-		speech.Speak(sentence)
+		_ = speech.Speak(sentence)
 		defer func() {
 			_ = os.RemoveAll("./audio")
 		}()
