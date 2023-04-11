@@ -8,6 +8,7 @@ import (
 	"github.com/hegedustibor/htgo-tts/handlers"
 	"github.com/hegedustibor/htgo-tts/voices"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 // speakCmd represents the speak command
@@ -23,6 +24,9 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		speech := htgotts.Speech{Folder: "audio", Language: voices.Japanese, Handler: &handlers.Native{}}
 		speech.Speak(sentence)
+		defer func() {
+			_ = os.RemoveAll("./audio")
+		}()
 	},
 }
 
